@@ -1,12 +1,20 @@
 
 const msalConfig = {
   auth: {
-    clientId: "CLIENT_ID",                             // from Azure App Registration
-    authority: "https://login.microsoftonline.com/common",  // or your tenant GUID/domain or 'organizations'
-    redirectUri: window.location.origin,                    // must be listed in Azure → Authentication (SPA)
+    clientId: "<YOUR_SPA_CLIENT_ID_FROM LIFEBLOOD TENANT>",
+    // tenant-specific authority (NOT /common)
+    authority: "https://login.microsoftonline.com/<YOUR_LIFEBLOOD_TENANT_ID>",
+    // keep EXACTLY the same as in Azure > App registration > Authentication (SPA)
+    redirectUri: window.location.origin + "/",  
+    postLogoutRedirectUri: window.location.origin + "/",
   },
-  cache: { cacheLocation: "sessionStorage", storeAuthStateInCookie: false },
+  cache: {
+    cacheLocation: "localStorage",               // survives page reloads nicely in SPAs
+    storeAuthStateInCookie: false,
+  },
 };
 
-export const loginRequest = { scopes: ["User.Read"] };
+// For sign-in only; no admin consent needed
+export const loginRequest = { scopes: ["openid", "profile", "email"] };
+
 export default msalConfig;

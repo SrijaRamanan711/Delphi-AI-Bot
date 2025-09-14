@@ -1,54 +1,64 @@
 
 import React from "react";
 import "./Login.css";
-
-
-
-function handleMicrosoftLogin() {
-  if (typeof window !== "undefined" && typeof window.__msalLogin === "function") {
-    return window.__msalLogin();
-  }
-  alert("Microsoft OAuth (stub) — integrate MSAL when ready.");
-}
+import { useMsal, useIsAuthenticated } from "@azure/msal-react";
+import { loginRequest } from "../../authConfig";
 
 export default function Login() {
+  const { instance, accounts } = useMsal();
+  const isAuth = useIsAuthenticated();
+
+  const signIn = async () => {
+    try {
+      await instance.loginRedirect(loginRequest);
+    } catch (e) {
+      console.error(e);
+      alert("Sign-in failed. Please try again.");
+    }
+  };
+
+  const signOut = () => instance.logoutRedirect();
+
   return (
     <main className="auth" role="main">
       {/* LEFT: content column */}
       <section className="auth__panel" aria-labelledby="welcome-title">
         <div className="panel__inner">
-          {/* Brand wordmark (no logo) */}
           <div className="brandword">DELPHI</div>
           <p className="brandtagline">Decision insights for Lifeblood</p>
 
-          {/* Headings */}
-          <h1 id="welcome-title" className="panel__title">Welcome back</h1>
-          <p className="panel__sub strong">Please sign in to continue</p>
+          {!isAuth ? (
+            <>
+              <h1 id="welcome-title" className="panel__title">Welcome back</h1>
+              <p className="panel__sub strong">Please sign in to continue</p>
 
-          {/* Microsoft SSO */}
-          <button
-            type="button"
-            className="btn btn--microsoft btn--maroon-border"
-            onClick={handleMicrosoftLogin}
-            aria-label="Sign in with Microsoft"
-          >
-            <span className="ms-mark" aria-hidden="true">
-              <span className="sq sq--red" />
-              <span className="sq sq--green" />
-              <span className="sq sq--blue" />
-              <span className="sq sq--yellow" />
-            </span>
-            <span className="btn__text">Sign in with Microsoft</span>
-          </button>
+              <button
+                type="button"
+                className="btn btn--microsoft btn--maroon-border"
+                onClick={signIn}
+                aria-label="Sign in with Microsoft"
+              >
+                <span className="ms-mark" aria-hidden="true">
+                  <span className="sq sq--red" />
+                  <span className="sq sq--green" />
+                  <span className="sq sq--blue" />
+                  <span className="sq sq--yellow" />
+                </span>
+                <span className="btn__text">Sign in with Microsoft</span>
+              </button>
 
-          {/* Legal */}
-          <p className="legal">
-            By continuing, you agree to the <a href="#">Terms</a> and{" "}
-            <a href="#">Privacy Policy</a>.
-          </p>
-    
-
-
+              <p className="legal">
+                By continuing, you agree to the <a href="#">Terms</a> and{" "}
+                <a href="#">Privacy Policy</a>.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="panel__title">Welcome, {accounts[0]?.name || accounts[0]?.username}</h1>
+              <p className="panel__sub">You’re signed in.</p>
+              <button className="btn btn--maroon-border" onClick={signOut}>Sign out</button>
+            </>
+          )}
         </div>
       </section>
 
